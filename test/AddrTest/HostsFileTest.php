@@ -106,7 +106,7 @@ class HostsFileTest extends \PHPUnit_Framework_TestCase
         foreach ($tests as $i => $test) {
             list($expectedResult, $hostname, $inputAddrMode, $expectedAddrMode) = $test;
 
-            $result = $hostsFile->resolve($hostname, $inputAddrMode);
+            $result = $hostsFile->resolve($hostname, , $inputAddrMode);
 
             if ($expectedResult === null) {
                 $this->assertNull($result);

@@ -2,6 +2,8 @@
 
 namespace Addr\Cache;
 
+use Addr\ResolutionErrors;
+
 class APCCache extends KeyValueCache
 {
     /**
@@ -21,16 +23,16 @@ class APCCache extends KeyValueCache
      * @param int $type
      * @param callable $callback
      */
-    public function get($name, $type, callable $callback)
+    public function resolve($name, $type, callable $callback)
     {
         $value = apc_fetch($this->generateKey($name, $type), $success);
 
         if ($success) {
-            $callback(true, $value);
+            $callback($value, $type);
             return;
         }
 
-        $callback(false, null);
+        $callback(null, ResolutionErrors::ERR_NO_RECORD);
     }
 
     /**

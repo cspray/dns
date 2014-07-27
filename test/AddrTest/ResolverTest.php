@@ -87,7 +87,7 @@ class ResolverTest extends \PHPUnit_Framework_TestCase {
         $tooLongName = $tooLongName.$alphabet;    //234
         $tooLongName = $tooLongName.$alphabet;    //260
 
-        $resolver->resolve($tooLongName, $callback1, AddressModes::PREFER_INET6);
+        $resolver->resolve($tooLongName, AddressModes::PREFER_INET6, $callback1);
         
         $reactor->run();
 
@@ -115,7 +115,7 @@ class ResolverTest extends \PHPUnit_Framework_TestCase {
             $resultType1 = $type;
         };
 
-        $resolver->resolve("doesntexist", $callback1, AddressModes::PREFER_INET6);
+        $resolver->resolve("doesntexist", AddressModes::PREFER_INET6, $callback1);
         $reactor->run();
 
         $this->assertEquals(1, $callbackCount);
@@ -151,8 +151,8 @@ class ResolverTest extends \PHPUnit_Framework_TestCase {
             $resultType2 = $type;
         };
 
-        $resolver->resolve("localhost", $callback1, AddressModes::INET4_ADDR);
-        $resolver->resolve("localhost", $callback2, AddressModes::PREFER_INET6);
+        $resolver->resolve("localhost", AddressModes::INET4_ADDR, $callback1);
+        $resolver->resolve("localhost", AddressModes::PREFER_INET6, $callback2);
 
         $reactor->run();
 
@@ -192,8 +192,8 @@ class ResolverTest extends \PHPUnit_Framework_TestCase {
             $resultType2 = $type;
         };
 
-        $resolver->resolve("host1.example.com", $callback1, AddressModes::INET4_ADDR);
-        $resolver->resolve("resolvertest", $callback2, AddressModes::INET4_ADDR);
+        $resolver->resolve("host1.example.com", AddressModes::INET4_ADDR, $callback1);
+        $resolver->resolve("resolvertest", AddressModes::INET4_ADDR, $callback2);
         $reactor->run();
         
         $this->assertEquals(2, $callbackCount);
@@ -215,9 +215,9 @@ class ResolverTest extends \PHPUnit_Framework_TestCase {
         $results = [];
 
         foreach ($names as $name) {
-            $resolver->resolve($name, function($addr) use($name, $resolver, &$results) {
-                    $results[] = [$name, $addr];
-                });
+            $resolver->resolve($name, , function ($addr) use ($name, $resolver, &$results) {
+                $results[] = [$name, $addr];
+            });
         }
 
         $reactor->run();

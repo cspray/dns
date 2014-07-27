@@ -3,6 +3,7 @@
 namespace Addr\Cache;
 
 use Addr\Cache;
+use Addr\ResolutionErrors;
 
 class MemoryCache implements Cache
 {
@@ -25,18 +26,18 @@ class MemoryCache implements Cache
      * @param int $type
      * @param callable $callback
      */
-    public function get($name, $type, callable $callback)
+    public function resolve($name, $type, callable $callback)
     {
         if (isset($this->recordsByTypeAndName[$type][$name])) {
             list($value, $expireTime) = $this->recordsByTypeAndName[$type][$name];
 
             if ($expireTime > time()) {
-                $callback(true, $value);
+                $callback($value, $type);
                 return;
             }
         }
 
-        $callback(false, null);
+        $callback(null, ResolutionErrors::ERR_NO_RECORD);
     }
 
     /**

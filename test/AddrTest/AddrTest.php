@@ -100,9 +100,9 @@ class AddrTest extends \PHPUnit_Framework_TestCase
         $results = [];
 
         foreach ($names as $name) {
-            $resolver->resolve($name, function($addr) use($name, $resolver, &$results) {
-                    $results[$name] = $addr;
-                });
+            $resolver->resolve($name, , function ($addr) use ($name, $resolver, &$results) {
+                $results[$name] = $addr;
+            });
         }
 
         $reactor->run();
@@ -168,9 +168,9 @@ class AddrTest extends \PHPUnit_Framework_TestCase
         
         //Lookup the first set of names
         foreach ($namesFirstRun as $name) {
-            $resolver->resolve($name, function($addr) use($name, $resolver, &$results) {
-                    $results[] = [$name, $addr];
-                });
+            $resolver->resolve($name, , function ($addr) use ($name, $resolver, &$results) {
+                $results[] = [$name, $addr];
+            });
         }
 
         $reactor->run();
@@ -185,9 +185,9 @@ class AddrTest extends \PHPUnit_Framework_TestCase
 
         //Lookup a second set of names
         foreach ($namesSecondRun as $name) {
-            $resolver->resolve($name, function($addr) use($name, $resolver, &$results) {
-                    $results[] = [$name, $addr];
-                });
+            $resolver->resolve($name, , function ($addr) use ($name, $resolver, &$results) {
+                $results[] = [$name, $addr];
+            });
         }
 
         $reactor->run();

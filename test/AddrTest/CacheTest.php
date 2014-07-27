@@ -123,28 +123,28 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $value1 = '12345';
         $value2 = '54321';
 
-        $cache->get($name, $type, function($alreadyExisted, $retrievedValue) {
+        $cache->resolve($name, $type, function($alreadyExisted, $retrievedValue) {
             $this->assertFalse($alreadyExisted);
             $this->assertNull($retrievedValue);
         });
 
         $cache->store($name, $type, $value1, $ttl);
 
-        $cache->get($name, $type, function($alreadyExisted, $retrievedValue) use($value1) {
+        $cache->resolve($name, $type, function($alreadyExisted, $retrievedValue) use($value1) {
             $this->assertTrue($alreadyExisted);
             $this->assertEquals($value1, $retrievedValue);
         });
 
         $cache->delete($name, $type);
 
-        $cache->get($name, $type, function($alreadyExisted, $retrievedValue) {
+        $cache->resolve($name, $type, function($alreadyExisted, $retrievedValue) {
             $this->assertFalse($alreadyExisted);
             $this->assertNull($retrievedValue);
         });
 
         $cache->store($name, $type, $value2, $ttl);
 
-        $cache->get($name, $type, function($alreadyExisted, $retrievedValue) use($value2) {
+        $cache->resolve($name, $type, function($alreadyExisted, $retrievedValue) use($value2) {
             $this->assertTrue($alreadyExisted);
             $this->assertEquals($value2, $retrievedValue);
         });
@@ -161,19 +161,19 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
         //A TTL of zero should be expired instantly
         $memoryCache->store($name, $type, $value, 0);
-        $memoryCache->get($name, $type, function($cacheHit) {
+        $memoryCache->resolve($name, $type, function($cacheHit) {
             $this->assertFalse($cacheHit);
         });
 
         //A negative TTL should be expired instantly
         $memoryCache->store($name, $type, $value, -5);
-        $memoryCache->get($name, $type, function($cacheHit) {
+        $memoryCache->resolve($name, $type, function($cacheHit) {
             $this->assertFalse($cacheHit);
         });
 
         //A positive TTL should be cached
         $memoryCache->store($name, $type, $value, 5);
-        $memoryCache->get($name, $type, function($alreadyExisted, $retrievedValue) use($value) {
+        $memoryCache->resolve($name, $type, function($alreadyExisted, $retrievedValue) use($value) {
             $this->assertTrue($alreadyExisted);
             $this->assertEquals($value, $retrievedValue);
         });

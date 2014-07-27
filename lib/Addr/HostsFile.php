@@ -2,7 +2,7 @@
 
 namespace Addr;
 
-class HostsFile
+class HostsFile implements Resolver
 {
     /**
      * @var NameValidator
@@ -109,9 +109,10 @@ class HostsFile
      *
      * @param string $name
      * @param int $mode
+     * @param callable $callback
      * @return array|null
      */
-    public function resolve($name, $mode)
+    public function resolve($name, $mode, callable $callback)
     {
         $this->ensureDataIsCurrent();
 
@@ -122,11 +123,11 @@ class HostsFile
         $pref6 = (bool)($mode & AddressModes::PREFER_INET6);
 
         if ($have6 && $want6 && (!$want4 || !$have4 || $pref6)) {
-            return [$this->data[AddressModes::INET6_ADDR][$name], AddressModes::INET6_ADDR];
+            $callback($this->data[AddressModes::INET6_ADDR][$name], AddressModes::INET6_ADDR);
         } else if ($have4 && $want4) {
-            return [$this->data[AddressModes::INET4_ADDR][$name], AddressModes::INET4_ADDR];
+            $callback($this->data[AddressModes::INET4_ADDR][$name], AddressModes::INET4_ADDR);
+        } else {
+            $callback(null, ResolutionErrors::ERR_NO_RECORD);
         }
-
-        return null;
     }
 }

@@ -18,7 +18,7 @@ $reactor = (new ReactorFactory)->select();
 $resolver = (new ResolverFactory)->createResolver($reactor);
 
 foreach ($names as $name) {
-    $resolver->resolve($name, function($addr) use($name, $resolver) {
+    $resolver->resolve($name, , function ($addr) use ($name, $resolver) {
         echo "{$name}: {$addr}\n";
     });
 }

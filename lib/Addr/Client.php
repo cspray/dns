@@ -296,7 +296,7 @@ class Client
         $name = $this->pendingLookups[$id]['name'];
         $type = array_shift($this->pendingLookups[$id]['requests']);
 
-        $this->cache->get($name, $type, function($cacheHit, $addr) use($id, $name, $type) {
+        $this->cache->resolve($name, $type, function($cacheHit, $addr) use($id, $name, $type) {
             if ($cacheHit) {
                 $this->completePendingLookup($id, $addr, $type);
             } else {

@@ -62,7 +62,7 @@ abstract class KeyValueCache implements Cache
      * @param int $type
      * @param callable $callback
      */
-    abstract public function get($name, $type, callable $callback);
+    abstract public function resolve($name, $type, callable $callback);
 
     /**
      * Stores a value in the cache. Overwrites the previous value if there was one.

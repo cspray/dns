@@ -2,6 +2,7 @@
 
 namespace Addr\Cache;
 
+use Addr\ResolutionErrors;
 use Predis\Client as RedisClient;
 
 class RedisCache extends KeyValueCache
@@ -47,16 +48,16 @@ SCRIPT;
      * @param int $type
      * @param callable $callback
      */
-    public function get($name, $type, callable $callback)
+    public function resolve($name, $type, callable $callback)
     {
         list($wasHit, $value) = $this->redisClient->eval($this->fetchLuaScript, 1, $this->generateKey($name, $type));
 
         if ($wasHit) {
-            $callback(true, $value);
+            $callback($value, $type);
             return;
         }
 
-        $callback(false, null);
+        $callback(null, ResolutionErrors::ERR_NO_RECORD);
     }
 
     /**
