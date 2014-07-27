@@ -79,15 +79,15 @@ class OrderedResolverStrategy implements Resolver
      */
     private function resolveAsIPAddress($name, $callback)
     {
-        if (filter_var($name, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            $this->reactor->immediately(function() use($callback, $name) {
-                call_user_func($callback, $name, AddressModes::INET4_ADDR);
+        if ($address = filter_var($name, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $this->reactor->immediately(function() use($callback, $address) {
+                call_user_func($callback, $address, AddressModes::INET4_ADDR);
             });
 
             return true;
-        } else if (filter_var($name, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            $this->reactor->immediately(function() use($callback, $name) {
-                call_user_func($callback, $name, AddressModes::INET6_ADDR);
+        } else if ($address = filter_var(rtrim(ltrim($name, '['), ']'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $this->reactor->immediately(function() use($callback, $address) {
+                call_user_func($callback, $address, AddressModes::INET6_ADDR);
             });
 
             return true;
@@ -130,12 +130,9 @@ class OrderedResolverStrategy implements Resolver
      */
     public function resolve($name, $mode, callable $callback)
     {
-        if ($this->resolveAsIPAddress($name, $callback)) {
-            return;
-        }
-
         $name = strtolower($name);
-        if (!$this->validateName($name, $callback)) {
+
+        if ($this->resolveAsIPAddress($name, $callback) || !$this->validateName($name, $callback)) {
             return;
         }
 
