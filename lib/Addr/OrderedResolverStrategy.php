@@ -4,7 +4,7 @@ namespace Addr;
 
 use Alert\Reactor;
 
-class OrderedResolverSet implements Resolver
+class OrderedResolverStrategy implements Resolver
 {
     /**
      * @var Reactor
@@ -17,33 +17,37 @@ class OrderedResolverSet implements Resolver
     private $nameValidator;
 
     /**
-     * @var Client
+     * @var Resolver[]
      */
-    private $client;
-
-    /**
-     * @var HostsFile
-     */
-    private $hostsFile;
+    private $resolvers = [];
 
     /**
      * Constructor
      *
      * @param Reactor $reactor
      * @param NameValidator $nameValidator
-     * @param Client $client
-     * @param HostsFile $hostsFile
+     * @param Resolver ...$resolvers
+     * @throws \LogicException
      */
     public function __construct(
         Reactor $reactor,
-        NameValidator $nameValidator,
-        Client $client = null,
-        HostsFile $hostsFile = null
+        NameValidator $nameValidator
+        /*, Resolver ...$resolvers */
     ) {
+        if (func_num_args() < 3) {
+            throw new \LogicException(__CLASS__ . ' requires at least one resolver');
+        }
+
         $this->reactor = $reactor;
         $this->nameValidator = $nameValidator;
-        $this->client = $client;
-        $this->hostsFile = $hostsFile;
+
+        foreach (array_slice(func_get_args(), 2) as $resolver) {
+            if (!($resolver instanceof Resolver)) {
+                throw new \LogicException(__CLASS__ . ' resolvers must be instances or Resolver');
+            }
+
+            $this->resolvers[] = $resolver;
+        }
     }
 
     /**
@@ -93,62 +97,28 @@ class OrderedResolverSet implements Resolver
     }
 
     /**
-     * Resolve a name in the hosts file
+     * Walk the resolver stack until one gets a hit
      *
+     * @param int $id
      * @param string $name
      * @param int $mode
      * @param callable $callback
-     * @return bool
      */
-    private function resolveInHostsFile($name, $mode, $callback)
+    private function callResolver($id, $name, $mode, callable $callback)
     {
-        /* localhost should resolve regardless of whether we have a hosts file
-           also the Windows hosts file no longer contains this record */
-        if ($name === 'localhost') {
-            if ($mode & AddressModes::PREFER_INET6) {
-                $this->reactor->immediately(function() use($callback) {
-                    call_user_func($callback, '::1', AddressModes::INET6_ADDR);
-                });
-            } else {
-                $this->reactor->immediately(function() use($callback) {
-                    call_user_func($callback, '127.0.0.1', AddressModes::INET4_ADDR);
-                });
+        $this->resolvers[$id]->resolve($name, $mode, function($address, $type) use($id, $name, $mode, $callback) {
+            if ($address !== null) {
+                $callback($address, $type);
+                return;
             }
 
-            return true;
-        }
+            if (isset($this->resolvers[++$id])) {
+                $this->callResolver($id, $name, $mode, $callback);
+                return;
+            }
 
-        if (!$this->hostsFile || null === $result = $this->hostsFile->resolve($name, , $mode)) {
-            return false;
-        }
-
-        list($addr, $type) = $result;
-        $this->reactor->immediately(function() use($callback, $addr, $type) {
-            call_user_func($callback, $addr, $type);
+            $callback(null, $type);
         });
-
-        return true;
-    }
-
-    /**
-     * Resolve a name from a server
-     *
-     * @param string $name
-     * @param int $mode
-     * @param callable $callback
-     * @return bool
-     */
-    private function resolveFromServer($name, $mode, $callback)
-    {
-        if (!$this->client) {
-            $this->reactor->immediately(function() use($callback) {
-                call_user_func($callback, null, ResolutionErrors::ERR_NO_RECORD);
-            });
-
-            return;
-        }
-
-        $this->client->resolve($name, $mode, $callback);
     }
 
     /**
@@ -169,10 +139,6 @@ class OrderedResolverSet implements Resolver
             return;
         }
 
-        if ($this->resolveInHostsFile($name, $mode, $callback)) {
-            return;
-        }
-
-        $this->resolveFromServer($name, $mode, $callback);
+        $this->callResolver(0, $name, $mode, $callback);
     }
 }

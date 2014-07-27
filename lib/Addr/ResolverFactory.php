@@ -19,7 +19,7 @@ class ResolverFactory
      * @param int $requestTimeout
      * @param Cache $cache
      * @param string $hostsFilePath
-     * @return OrderedResolverSet
+     * @return OrderedResolverStrategy
      */
     public function createResolver(
         Reactor $reactor,
@@ -47,6 +47,6 @@ class ResolverFactory
 
         $hostsFile = new HostsFile($nameValidator, $hostsFilePath);
 
-        return new OrderedResolverSet($reactor, $nameValidator, $client, $hostsFile);
+        return new OrderedResolverStrategy($reactor, $nameValidator, $client, $hostsFile);
     }
 }

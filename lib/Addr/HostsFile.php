@@ -110,10 +110,19 @@ class HostsFile implements Resolver
      * @param string $name
      * @param int $mode
      * @param callable $callback
-     * @return array|null
      */
     public function resolve($name, $mode, callable $callback)
     {
+        if ($name === 'localhost') {
+            if ($mode & AddressModes::PREFER_INET6) {
+                $callback('::1', AddressModes::INET6_ADDR);
+            } else {
+                $callback('127.0.0.1', AddressModes::INET4_ADDR);
+            }
+
+            return;
+        }
+
         $this->ensureDataIsCurrent();
 
         $have4 = isset($this->data[AddressModes::INET4_ADDR][$name]);
