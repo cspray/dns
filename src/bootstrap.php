@@ -4,7 +4,7 @@ $libRoot = dirname(__DIR__);
 
 spl_autoload_register(function($className) use($libRoot) {
     if (strpos($className, 'Addr\\') === 0) {
-        require $libRoot . '/lib/' . strtr($className, '\\', '/') . '.php';
+        require $libRoot . '/src/' . strtr($className, '\\', '/') . '.php';
     }
 });
 
