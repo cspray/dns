@@ -211,7 +211,7 @@ function __loadHostsFile($path = null) {
         ;
     }
     try {
-        $contents = (yield \Amp\Filesystem\get($path));
+        $contents = (yield \Amp\File\get($path));
     } catch (\Exception $e) {
         yield new \Amp\CoroutineResult($data);
         return;
